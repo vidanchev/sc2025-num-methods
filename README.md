@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This is some reference code for numerical methods to be used for Space Challenges 2025 Bootcamp workshops in Aug 1-2 2024. The purpose of the workshop is to familiarize cadets with numerical methods for solving differential equations and to write a basic orbital propagator which can be compared to tools such as General Mission Analysis Tool (GMAT) and Systems Toolkit (STK). The workshop is meant to be conducted as 2 sessions per ~3 hours with the following subdivision of tasks during each 1-1.5 hours:
+This is some reference code for numerical methods to be used for Space Challenges 2025 Bootcamp workshops in Aug 1-2 2025. The purpose of the workshop is to familiarize cadets with numerical methods for solving differential equations and to write a basic orbital propagator which can be compared to tools such as General Mission Analysis Tool (GMAT) and Systems Toolkit (STK). The workshop is meant to be conducted as 2 sessions per ~3 hours with the following subdivision of tasks during each 1-1.5 hours:
 
 - Session 1: Intro to differential equations:
   - what do DEs describe and how do they look
@@ -22,8 +22,7 @@ This is some reference code for numerical methods to be used for Space Challenge
 ## Files Included
 
 - README.md the readme file
-- main.py includes the main driver for the code where we set up the initial conditions and actually run the integrator which will be outputting in .csv files.
+- main.py includes the main driver for the code where we set up the initial conditions and actually run the integrator which will be outputting in .csv files (for the satellite solution).
 - Integrators.py includes the numerical integrators and differential equations right hand sides as functions which will be called from the main code.
-- Plotter.py has a parser for reading the results and different plotting functions for the various files we're going to be exporting from the solvers.
-- Satellite_PVT_GMAT.csv is the .csv file with solution after propagating the trajectory for 1 day with GMAT/STK with higher order integrator and higher J terms in the potential - we wll be comparing to this file
-- Satellite_PVT_WS.csv is the .csv file with the solution after propagating the trajectory for 1 day with the RK4 propagator and only Newtonian term
+- Plotter.py has a parser for reading the results and a plotting function for the Kepler problem we're going to be exporting from the solver to be compared with the GMAT solution.
+- Satellite_PVT_GMAT.csv is the .csv file with solution after propagating the trajectory for 1 day with GMAT/STK with higher order integrator and higher J terms in the potential - we wll be comparing to this file.
