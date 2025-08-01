@@ -5,5 +5,52 @@ import numpy as np
 
 if __name__ == "__main__":
 
-    # YOUR MAIN CODE GOES HERE
-    print( "Hello World" )
+    # Parameters for calling the Euler integrator
+    x0 = 1.0 # initial position
+    v0 = 0.0 # initial velocity
+    t_i = 0.0 # Initial time
+    t_f = 4.0*np.pi # Final time
+    Npoints = 10000 # Number of points
+
+    # Call the Euler integrator with the needed inputs and record the outptus
+    time, pos_E, vel_E = Euler_Solver( x0 , v0 , t_i , t_f , Npoints )
+
+    # Call the Verlet integrator with the needed inputs and record the outptus
+    time, pos_V, vel_V = Verlet_Solver( x0 , v0 , t_i , t_f , Npoints )
+
+    # The real solution which we know because it's analytically solvable
+    real_pos = np.cos( time )
+
+    # Make a plot comparing the two
+    fig, ax = plt.subplots( )
+
+    plt.plot( time , real_pos , color = "green" , label = "Real" , linewidth = 2 )
+    plt.scatter( time , pos_E , color = "red" , label = "Euler" , linewidth = 2 )
+    plt.scatter( time , pos_V , color = "blue" , label = "Verlet" , linewidth = 2 )
+    
+    plt.grid( )
+    plt.xlabel( "Time [sec]" )
+    plt.ylabel( "Position [m]" )
+    plt.legend( loc = "lower right" )
+    plt.show( )
+
+    # Make a plot with the error
+    fig, ax = plt.subplots( )
+    err_E = np.zeros( len( time ) )
+    err_V = np.zeros( len( time ) )
+
+    for i in range( 0 , len( time ) ):
+        # Compute relative error point by point in [%]
+        err_E[ i ] = abs( ( real_pos[ i ] - pos_E[ i ] )/real_pos[ i ] ) * 100.0
+        err_V[ i ] = abs( ( real_pos[ i ] - pos_V[ i ] )/real_pos[ i ] ) * 100.0
+
+    plt.plot( time , err_E , color = "red" , label = "Euler Error" , linewidth = 2 )
+    plt.plot( time , err_V , color = "blue" , label = "Verlet Error" , linewidth = 2 )
+
+    
+    plt.grid( )
+    plt.xlabel( "Time [sec]" )
+    plt.ylabel( "Position Error [%]" )
+    plt.legend( loc = "lower right" )
+    plt.yscale( "log" )
+    plt.show( )
