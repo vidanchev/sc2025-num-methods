@@ -180,5 +180,16 @@ def Verlet_2D( pos_0 , vel_0 , body_param , sim_param ):
         rhs_pos, rhs_vel = Ballistic_RHS( beta , mass , pos[ i + 1 ] , vel_half )
         # Compute the second half-step velocity
         vel[ i + 1 ] = vel_half + rhs_vel*dt/2.0
+        if pos[ i + 1 ][ 1 ] < 0.0:
+            # If my next position in Y is < 0 (I go underground), stop me on the ground
+            # Plastic collision
+            #pos[ i + 1 ][ 1 ] = 0.0
+            #vel[ i + 1 ][ 1 ] = 0.0
+            # Ellastic collision
+            #pos[ i + 1 ][ 1 ] = 0.0 # Assume first point bellow 0 is where I cross
+            #vel[ i + 1 ][ 1 ] *= - 1.0 # "flip" Y velocity to reflect
+            # Realistic collision
+            pos[ i + 1 ][ 1 ] = 0.0
+            vel[ i + 1 ][ 1 ] *= - 0.9
 
     return time, pos, vel
