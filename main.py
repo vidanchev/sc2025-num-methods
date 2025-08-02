@@ -5,6 +5,7 @@ import numpy as np
 
 if __name__ == "__main__":
 
+    '''
     # Parameters for calling the Euler integrator
     x0 = 1.0 # initial position
     v0 = 0.0 # initial velocity
@@ -54,3 +55,15 @@ if __name__ == "__main__":
     plt.legend( loc = "lower right" )
     plt.yscale( "log" )
     plt.show( )
+    '''
+
+    pos_0 = [ 0 , 0 ] # Initial position
+    vel_0 = [ 2.0 ,  # [m/sec] magnitude 
+              30.0 ] # Angle [deg]
+    body_param = [ 1.0 , # Mass [kg]
+                    0.0 ] # Beta [kg/sec] -> 0 means NO DRAG
+    sim_param = [ 0.0 , # Initial time [sec]
+                  5.0 , # Final time [sec]
+                  100 ] # Number of points
+
+    time, pos, vel = Verlet_2D( pos_0 , vel_0 , body_param , sim_param )

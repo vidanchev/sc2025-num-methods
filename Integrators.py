@@ -3,6 +3,7 @@ import numpy as np
 # Constants of the spring (can be added as function parameters)
 k = 1.0 # Spring constant [N/m]
 m = 1.0 # Mass [kg]
+g_const = 9.81 # Grav constant on the surface of the Earth [m/sec^2]
 
 # Function which computes the right hand side of the hamornic oscillator
 # Inputs:
@@ -99,5 +100,85 @@ def Verlet_Solver( x0 , v0 , t_i , t_f , Npoints ):
         rhs_pos, rhs_vel = rhs_oscillator( pos[ i + 1 ] , v_half )
         # Complete second half-step forward in velocity
         vel[ i + 1 ] = v_half + rhs_vel*dt/2.0
+
+    return time, pos, vel
+
+# Right-Hand-Side for the ballistic trajectory
+# Inputs:
+# - beta: drag coefficient (Stokes drag) [kg/sec]
+# - mass: the mass of the body thrown [kg]
+# - pos[ 2 ]: 2D array holding X and Y position [m]
+# - vel[ 2 ]: 2D array holding V_X and V_Y velocity [m/sec]
+# Outputs:
+# - rhs_pos[ 2 ]: RHS of position (Xdot & Ydot) in [m/sec]
+# - rhs_vel[ 2 ]: RHS of velocity (V_Xdot & V_Ydot) in [m/sec^2]
+def Ballistic_RHS( beta , mass , pos , vel ):
+
+    rhs_pos = [ vel[ 0 ] , # Xdot = Vx
+                vel[ 1 ] ] # Ydot = Vy
+    rhs_vel = [ - beta*vel[ 0 ]/mass , # VXdot = - beta*VX
+                - g_const - beta*vel[ 1 ]/mass ] # VYdot = - g - beta*VY
+
+    # Don't forget to convert to Numpy arrays before returning
+    return np.array( rhs_pos ), np.array( rhs_vel )
+
+
+# 2D Verlet integrator
+# Inputs:
+# - pos_0[ 2 ]: Initial position ( X0 , Y0 ) [m]
+# - vel_0[ 2 ]: Initial velocity ( V0 [m/sec] , alpha [deg] )
+# NOTE: V0 is magnitude, alpha is the angle above the horizon - you have to convert! 
+# - body_param[ 2 ]: Body parameters ( mass [kg] , beta [kg/sec] )  
+# - sim_param[ 3 ]: Simulation parameters ( t_i , t_f , Npoints )
+# -- t_i: initial time [sec]
+# -- t_f: final time [sec]
+# -- Npoints: number of points [-]
+# Outputs:
+# - time[ Npoints ]: time array [sec]
+# - pos[ Npoints ][ 2 ]: position array ( X , Y ) for each time point [m]
+# - vel[ Npoints ][ 2 ]: velocity array ( V_X , V_Y ) for each time point [m/sec]
+def Verlet_2D( pos_0 , vel_0 , body_param , sim_param ):
+
+    # Take out the body parameters
+    mass = body_param[ 0 ]
+    beta = body_param[ 1 ]
+
+    # Assign the initial, final and Npoints values
+    t_i = sim_param[ 0 ]
+    t_f = sim_param[ 1 ]
+    Npoints = sim_param[ 2 ]
+    # Compute time step 
+    # |  |  |  | -> intervals are always 1 less than the points
+    dt = ( t_f - t_i )/( Npoints - 1.0 ) 
+    # Create the time array
+    time = np.linspace( t_i , t_f , Npoints )
+
+    # Initialize the vectors which will hold the solution
+    pos = np.zeros( ( Npoints , 2 ) ) # pos[ 0 ] is [ X( 0 ) , Y( 0 ) ]  ,
+    # pos[ i ] is [ X[ i ] , Y[ i ] ]
+    vel = np.zeros( ( Npoints , 2 ) ) # vel[ 0 ] is [ VX( 0 ) , VY( 0 ) ] 
+
+    # Convert and assign the initial position and velocity
+    pos[ 0 ][ 0 ] = pos_0[ 0 ] # Vx0 = whatever was given as input
+    pos[ 0 ][ 1 ] = pos_0[ 1 ] # Vy0 = whatever was given as input
+    # Vx0 = V0*cos( alpha ) -> converted to radians
+    vel[ 0 ][ 0 ] = vel_0[ 0 ]*np.cos( vel_0[ 1 ]*np.pi/180.0 ) 
+    # Vy0 = V0*sin( alpha ) -> converted to radians
+    vel[ 0 ][ 1 ] = vel_0[ 0 ]*np.sin( vel_0[ 1 ]*np.pi/180.0 ) 
+
+    # Main integration loop
+    for i in range( 0 , Npoints - 1 ):
+        # Call RHS function to get the forces in the current point "i"
+        rhs_pos, rhs_vel = Ballistic_RHS( beta , mass , pos[ i ] , vel[ i ] )
+        # Compute the first half-step velocity
+        vel_half = vel[ i ] + rhs_vel*dt/2.0
+        # Call RHS function to get the forces in the "half-point"
+        rhs_pos, rhs_vel = Ballistic_RHS( beta , mass , pos[ i ] , vel_half )
+        # Compute the full step position in the future
+        pos[ i + 1 ] = pos[ i ] + rhs_pos*dt
+        # Call RHS function to get the forces in the "next" point "i+1"
+        rhs_pos, rhs_vel = Ballistic_RHS( beta , mass , pos[ i + 1 ] , vel_half )
+        # Compute the second half-step velocity
+        vel[ i + 1 ] = vel_half + rhs_vel*dt/2.0
 
     return time, pos, vel
